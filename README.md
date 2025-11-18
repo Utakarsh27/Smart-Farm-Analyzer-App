@@ -1,5 +1,6 @@
 # Smart-Farm-Analyzer-App
 app/
+├──requirements.txt
 │
 ├── App/
 │   └── App.py
