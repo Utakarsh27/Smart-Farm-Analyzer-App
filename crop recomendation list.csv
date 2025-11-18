@@ -1,0 +1,18 @@
+Crop,EC_optimal (dS/m),EC_max (dS/m),Slope_max (ø),Irrigation,Soil_pref
+Rice,0,4,3,High,Clay/Loam
+Wheat,0,6,5,Medium,Loam/Clay
+Cotton,4,8,10,Medium,Loam
+Sorghum,5,10,15,Low,Loam/Sandy
+Pearl Millet (Bajra),3,7,15,Low,Sandy/Loam
+Groundnut,2,6,8,Medium,Loam/Sandy
+Chickpea (Gram),0,4,5,Low,Loam
+Blackgram,0,4,5,Low,Loam
+Sugarcane,2,6,5,High,Clay/Loam
+Soybean,2,6,10,Medium,Loam
+Onion,0,4,5,Medium,Loam/Sandy
+Tomato,0,3,5,Medium,Loam/Sandy
+Grapes,0,3,10,Medium,Loam/Clay
+Pomegranate,0,4,10,Low,Loam/Sandy
+Ber,0,6,15,Low,Sandy/Loam
+Custard Apple,0,6,15,Low,Sandy/Loam
+Sesamum,0,6,10,Low,Sandy/Loam
