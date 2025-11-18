@@ -4,63 +4,43 @@ import pandas as pd
 import rasterio
 from rasterio.mask import mask
 from shapely.geometry import Polygon
-from zipfile import ZipFile
-import io
 
-st.title("Rahuri Crop Recommendation App 🌱")
+st.title("Rahuri Crop Recommendation App - Demo Version")
 
-# -------------------------------
-# Step 1: Upload shapefile/KML/KMZ (optional)
-uploaded_file = st.file_uploader(
-    "Upload shapefile (.zip) or KML/KMZ (optional, else sample polygons will be used)",
-    type=["zip", "kml", "kmz"]
-)
+# -----------------------------
+# Step 0: Define demo polygon(s)
+# -----------------------------
+demo_polygons = [Polygon([(0, 0), (0, 1), (1, 1), (1, 0)])]  # Replace with any coordinates
+gdf = gpd.GeoDataFrame({'Field_ID': ['Field_1'], 'geometry': demo_polygons})
 
-# -------------------------------
-# Step 2: Load or create GeoDataFrame
-if uploaded_file:
-    try:
-        if uploaded_file.name.endswith(".zip"):
-            gdf = gpd.read_file(f"zip://{uploaded_file.name}")
-        else:
-            # KML/KMZ support (may need driver)
-            gdf = gpd.read_file(uploaded_file)
-        st.success("Shapefile/KML loaded successfully!")
-    except Exception as e:
-        st.warning(f"Error reading file: {e}. Using sample polygons instead.")
-        uploaded_file = None
-
-if not uploaded_file:
-    st.info("Using sample polygons for demo.")
-    polygons = [
-        Polygon([(72.8,19.9),(72.8,20.0),(72.9,20.0),(72.9,19.9)]),
-        Polygon([(72.85,19.95),(72.85,20.05),(72.95,20.05),(72.95,19.95)])
-    ]
-    gdf = gpd.GeoDataFrame({'Field_ID': ['Field_1','Field_2']}, geometry=polygons)
-
-st.write("Fields:")
+st.write("Demo field(s):")
 st.map(gdf)
 
-# -------------------------------
-# Step 3: Load crop database
-crops = pd.read_csv("crop recomendation list.csv")
-st.write("Crop Database:")
-st.dataframe(crops)
+# -----------------------------
+# Step 1: Load crop database
+# -----------------------------
+# Make sure 'crop recommendation list.csv' is in the same folder
+crops = pd.read_csv("crop recommendation list.csv")
+st.write("Crop database preview:")
+st.dataframe(crops.head())
 
-# -------------------------------
-# Step 4: Load raster files
-salinity_raster = rasterio.open("Rasters/salinity classified.tif")
-slope_raster = rasterio.open("Rasters/slope classified.tif")
-suitability_raster = rasterio.open("Rasters/sutability.tif")
+# -----------------------------
+# Step 2: Load raster maps
+# -----------------------------
+# Replace these with your actual raster file paths
+salinity_raster = rasterio.open("Rasters/salinity_classified.tif")
+slope_raster = rasterio.open("Rasters/slope_classified.tif")
+suitability_raster = rasterio.open("Rasters/suitability.tif")
 
-# -------------------------------
-# Step 5: Crop recommendation logic
+# -----------------------------
+# Step 3: Loop through polygons
+# -----------------------------
 results = []
 
 for idx, row in gdf.iterrows():
-    geom = [row['geometry']]  # geometry must be a list
+    geom = [row['geometry']]  # Must be a list for rasterio.mask
 
-    # Extract raster values within polygon
+    # Extract raster values inside polygon
     sal_masked, _ = mask(salinity_raster, geom, crop=True)
     slope_masked, _ = mask(slope_raster, geom, crop=True)
     suit_masked, _ = mask(suitability_raster, geom, crop=True)
@@ -70,7 +50,7 @@ for idx, row in gdf.iterrows():
     slope_avg = slope_masked.mean()
     suit_avg = suit_masked.mean()
 
-    # Recommend crops
+    # Recommend crops based on thresholds in CSV
     recommended = []
     for _, crop in crops.iterrows():
         if sal_avg <= crop['EC_max'] and slope_avg <= crop['Slope_max']:
@@ -84,16 +64,20 @@ for idx, row in gdf.iterrows():
         'Recommended_Crops': ', '.join(recommended)
     })
 
+# -----------------------------
+# Step 4: Display results
+# -----------------------------
 results_df = pd.DataFrame(results)
 st.write("Crop Recommendation Results:")
 st.dataframe(results_df)
 
-# -------------------------------
-# Step 6: Download CSV
+# -----------------------------
+# Step 5: Download CSV
+# -----------------------------
 csv = results_df.to_csv(index=False).encode('utf-8')
 st.download_button(
     "Download CSV",
     data=csv,
-    file_name='recommended_crops.csv',
+    file_name='recommended_crops_demo.csv',
     mime='text/csv'
 )
